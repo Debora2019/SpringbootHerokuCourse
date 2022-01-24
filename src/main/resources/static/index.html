@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="ISO-8859-1">
+<title>Hello, I am here</title>
+
+ <!-- Bootstrap CSS -->
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+<style type="text/css">
+  html{
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-top: 5%;
+  }
+</style>
+
+</head>
+<body>
+
+    <h3>Curso de SpringBoot e Angular</h3>
+
+    <form action="" id="formIdUser">
+        <div class="mb-3">
+            <label for="id" class="form-label">Id</label>
+            <input type="text" class="form-control" id="id" readonly="readonly">
+          </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" placeholder="put your name" required="required">
+          </div>
+          <div class="mb-3">
+            <label for="age" class="form-label">Age</label>
+            <input type="number" class="form-control" id="age">
+          </div>
+
+    </form>
+    <button type="button" class="btn btn-success" onClick="saveUser()">Send</button>
+
+    <button type="button" class="btn btn-warning" onClick="document.getElementById('formIdUser').reset()">New</button>
+
+    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalSearchUser">Search User</button>
+
+    <button type="button" class="btn btn-danger" onClick="deleteFromScreen()">Delete</button>
+
+    <div class="modal fade" id="modalSearchUser" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Search User</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="search-name" class="col-form-label">Inform the user name:</label>
+                <input type="text" class="form-control" id="search-name">
+              </div>
+              <button type="button" class="btn btn-success" onClick="searchUser()">Search </button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+             </form>
+          
+             <div style="height: 300px; overflow: scroll">
+             <table class="table" id="tableResult">
+              <thead>
+                <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">EDIT</th>
+                  <th scope="col">DELETE</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+     <!-- Option 1: Bootstrap Bundle with Popper -->
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+
+  function deleteFromScreen(){
+    var id= $("#id").val();
+
+    if(id != null && id.trim() != ''){
+      deleteUser(id);
+      document.getElementById('formIdUser').reset();  
+    }
+  }
+
+  function searchUser(){
+    var name = $('#search-name').val();
+
+    if(name != null && name.trim() != ''){
+
+      $.ajax({
+          method: "GET",
+          url: "findByName",
+          data: "name=" + name,
+          success: function (response){
+            $('#tableResult > tbody > tr ').remove();
+
+            for(var i = 0; i < response.length; i++){
+              $('#tableResult > tbody').append('<tr id="'+response[i].id+'"><td>'+response[i].id+'</td><td>' +response[i].name+'</td><td><button type="button" class="btn btn-danger" onClick="editUser('+response[i].id+')">See</button></td><td><button type="button" class="btn btn-danger" onClick="deleteUser('+response[i].id+')">Delete User</button></td></tr>');
+            }
+
+          }
+        }).fail(function (xhr, status, errorThrown){
+            alert("Error to find the user:" + xhr.responseText);
+        });
+    }
+  }
+
+
+  function deleteUser(id){
+
+    if(confirm('Do you want to delete this user?')){
+
+    $.ajax({
+          method: "DELETE",
+          url: "delete",
+          data: "id=" + id,
+          success: function (response){
+            $('#' + id).remove();
+        
+          }
+        }).fail(function (xhr, status, errorThrown){
+            alert("Error to delete the user" + xhr.responseText);
+        });
+      }
+      }
+
+  function editUser(id){
+
+    $.ajax({
+          method: "GET",
+          url: "search",
+          data: "id=" + id,
+          success: function (response){
+        $("#id").val(response.id);
+        $("#name").val(response.name);
+        $("#age").val(response.age);
+
+        $('#modalSearchUser').modal('hide');
+
+          }
+        }).fail(function (xhr, status, errorThrown){
+            alert("Error to find the user by id:" + xhr.responseText);
+        });
+  }
+
+    function saveUser(){
+        var id= $("#id").val();
+        var name= $("#name").val();
+        var age= $("#age").val();    
+
+if(name == null || name != null && name.trim() == '' ){
+  $("#name").focus();
+  alert("Please, inform the name");
+  return;
+}
+
+if(age == null || age != null && age.trim() == '' ){
+  $("#age").focus();
+  alert("Please, inform the age");
+  return;
+}
+
+          $.ajax({
+          method: "POST",
+          url: "save",
+          data: JSON.stringify({id: id, name: name, age: age}),
+          contentType: "application/json; charset=utf-8",
+          success: function (response){
+            $("#id").val(response.id);
+
+            $('#tableResult > tbody > tr ').add();
+
+              //alert("Save succesfull")
+          
+          }
+        }).fail(function (xhr, status, errorThrown){
+            alert("Error to save:" + xhr.responseText);
+        });
+    }
+  
+</script>
+</body>
+</html>
